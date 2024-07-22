@@ -15,4 +15,4 @@ from robot_list import robot_list
 robot_list = robot_list.RobotList(command) </br>
 test_dict, test_list = robot_list.list_robot_tests() </br>
 
-If --suite is provided within the argument then it test_dict will be populated otherwise test_list will only be populated
+If --suite is provided within the argument then test_dict will be populated otherwise test_list will only be populated
