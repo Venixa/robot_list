@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="robot_list",
-    version="0.0.7",
+    version="0.0.8",
     author="Venixa Innovations",
     author_email="venixainnovations@gmail.com",
     description="This is a package which lists the robot framework tests using robot command line arguments",
