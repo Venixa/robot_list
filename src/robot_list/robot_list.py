@@ -9,6 +9,7 @@ import shutil
 import sys
 
 help_doc = """
+****************** This package is for Robot Framework Users *********************
 Please provide the robot command or robot flags
 Usage:
 python -m robot_list '--include test1 --exclude test2 tests/'
@@ -24,10 +25,7 @@ robot_list = RobotList(command)
 robot_list.list_robot_tests()
 """
 
-if len(sys.argv) != 2:
-    raise Exception(help_doc)
 
-command = sys.argv[-1]
 
 class RobotList:
     """This class helps to list the robot tests with given robot parameters"""
@@ -98,7 +96,7 @@ class RobotList:
                 executed_testcases = self.__get_executed_testcases(
                     xml_log_dict['testsuite'])
         except FileNotFoundError as e:
-            print(str(e))
+            pass
         return executed_testcases
 
     def __delete_log_files(self):
@@ -122,5 +120,9 @@ class RobotList:
 
 
 if __name__ == '__main__':
+    if len(sys.argv) != 2:
+        raise Exception(help_doc)
+
+    command = sys.argv[-1]
     robot_list = RobotList(command)
     print(robot_list.list_robot_tests())
