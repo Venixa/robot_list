@@ -11,15 +11,15 @@ import sys
 help_doc = """
 Please provide the robot command or robot flags
 Usage:
-python -m robot_list.robot_list '--include test1 --exclude test2 tests/'
-python -m robot_list.robot_list '-i test1 -e test2 tests/'
-python -m robot_list.robot_list '--suite suite1 --test test1 tests/'
-python -m robot_list.robot_list '-s suite1 -t test1 tests/'
-python -m robot_list.robot_list '--include test1 --exclude test2 --suite suite1 tests/'
-python -m robot_list.robot_list '-i test1 -e test2 -s suite1 tests/'
+python -m robot_list '--include test1 --exclude test2 tests/'
+python -m robot_list '-i test1 -e test2 tests/'
+python -m robot_list '--suite suite1 --test test1 tests/'
+python -m robot_list '-s suite1 -t test1 tests/'
+python -m robot_list '--include test1 --exclude test2 --suite suite1 tests/'
+python -m robot_list '-i test1 -e test2 -s suite1 tests/'
 
 or
-from robot_list import robot_list
+
 robot_list = RobotList(command)
 robot_list.list_robot_tests()
 """
@@ -28,6 +28,7 @@ if len(sys.argv) != 2:
     raise Exception(help_doc)
 
 command = sys.argv[-1]
+
 
 class RobotList:
     """This class helps to list the robot tests with given robot parameters"""
@@ -67,7 +68,7 @@ class RobotList:
 
     def __parse_robot_command(self):
         """This function parses the robot command"""
-        suites = itags = etags = src_matches = []
+        suites = itags = tests = etags = src_matches = []
         try:
             itags = re.findall(self._REGEX_PATTERN_FILTER_INCLUDED,
                                self.command)
@@ -92,9 +93,13 @@ class RobotList:
                 tags.append('--exclude ' + tag[0].strip())
 
         # parsing etags
-        suites = [suite[0].strip() for suite in suites if len(suite) >= 1]
-        return suites, tags, (src_matches[-1] if src_matches
-                                          else'').strip()
+        suites = [f'--suite {suite[0].strip()}' for suite in suites if (len(
+            suite) >= 1)]
+        # parsing tests
+        tests = [f'--test {test[0].strip()}' for test in tests if (len(
+            test) >= 1)]
+        return suites, tests, tags, (src_matches[-1] if src_matches
+                                     else'').strip()
 
     def __get_executed_testcases(self, test_data):
         executed_testcases = []
@@ -157,27 +162,19 @@ class RobotList:
 
     def list_robot_tests(self):
         """This function lists the robot tests with given robot parameters"""
-        tests = {}
-        test_list = []
-        suites, tags, src_directory = self.__parse_robot_command()
+        tests = []
+        suites, robot_tests, tags, src_directory = (
+            self.__parse_robot_command())
         try:
-            if suites:
-                for suite in suites:
-                    rcmd = self.__robot_command(tags + [f'--suite {suite}'],
-                                                src_directory)
-                    self.__execute_command(rcmd)
-                    tests[suite] = self.__executed_tests(
-                        self.__xml_file_output)
-                    self.__delete_log_files()
-            else:
-                rcmd = self.__robot_command(tags, src_directory)
-                self.__execute_command(rcmd)
-                test_list = self.__executed_tests(self.__xml_file_output)
+            rcmd = self.__robot_command(tags + robot_tests + suites,
+                                        src_directory)
+            self.__execute_command(rcmd)
+            tests = self.__executed_tests(self.__xml_file_output)
         except Exception as e:
             pass
         self.__delete_log_files()
         self.__delete_log_directory()
-        return tests, test_list
+        return tests
 
 
 if __name__ == '__main__':
